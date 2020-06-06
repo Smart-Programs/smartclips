@@ -4,6 +4,8 @@ The easiest way to create and share clips for streamers. https://smartclips.app
 
 Note that the current version of SmartClips is based on a completely different system than what is currently in this repo. We have been working on reworking everything from the ground up. The current work in here can be seen at https://preview.smartclips.app
 
+If you would like to help we would appreciate it!
+
 ## Required
 
 - NodeJS: [Download Here](https://nodejs.org/en/download/)
