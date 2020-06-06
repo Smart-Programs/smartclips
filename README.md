@@ -104,3 +104,9 @@ Follow the same convention for defining this as the required environment variabl
 ## Running
 
 Once you have all the required environment variables run `npm run dev` and it will start the server on port 3000.
+
+
+# Resources
+
+#### Error Code Specification
+https://www.notion.so/smartprograms/SmartClips-Errors-40c8582816f145b08d1a6ee421fea03f
