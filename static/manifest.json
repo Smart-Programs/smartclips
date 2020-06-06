@@ -1,0 +1,21 @@
+{
+  "name": "SmartClips",
+  "description": "Clipping designed for you, focused on speed, and user experience.",
+  "short_name": "SmartClips",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#161e2e",
+  "background_color": "#161e2e",
+  "display": "standalone"
+}
