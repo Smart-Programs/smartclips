@@ -70,6 +70,10 @@ Follow the same convention for defining this as the required environment variabl
 - BRAINTREE_PUBLIC (Use your braintree Public key)
 - BRAINTREE_MERCHANT (Use your braintree Merchant ID)
 
+## Tracker - Required for creating clips
+
+- TRACKER_URL (A URL to a Mixer channel tracker to get their manifest files)
+
 #### S3 - Requires Oracle (otherwise it has no use)
 
 - S3_BUCKET (Your S3 Bucket name)
