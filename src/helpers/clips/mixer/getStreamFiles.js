@@ -3,7 +3,7 @@ import axios from 'axios'
 export default function getStreamFiles ({ channelid, length }) {
   return new Promise((resolve, reject) => {
     axios
-      .get(`https://trackers.smartprograms.workers.dev/${channelid}`)
+      .get(`${process.env.TRACKER_URL}/${channelid}`)
       .then(async ({ data: { files, key, error, online }, status }) => {
         if (status !== 200)
           throw new Error(`Server returned bad status: ${status}`)
