@@ -1,0 +1,64 @@
+{
+  "name": "smartclips",
+  "version": "0.0.1",
+  "description": "The easiest way to create and share clips for streamers. https://smartclips.app (Slowly moving over most stuff)",
+  "dependencies": {
+    "aws-sdk": "^2.691.0",
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "braintree": "^2.23.0",
+    "compose-middleware": "^5.0.1",
+    "compression": "^1.7.4",
+    "cookie-session": "^1.4.0",
+    "date-fns": "^2.14.0",
+    "express-validator": "^6.5.0",
+    "http-signature": "^1.3.4",
+    "jssha": "^3.1.0",
+    "nanoid": "^3.1.9",
+    "pino": "^6.3.2",
+    "pino-logflare": "^0.1.0",
+    "polka": "next",
+    "sirv": "^0.4.6",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.10.1",
+    "@babel/preset-env": "^7.10.2",
+    "@babel/runtime": "^7.10.2",
+    "@fullhuman/postcss-purgecss": "^2.2.0",
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-replace": "^2.3.3",
+    "@tailwindcss/ui": "^0.3.0",
+    "dotenv": "^8.2.0",
+    "postcss-cli": "^7.1.1",
+    "rollup": "^1.20.0",
+    "rollup-plugin-babel": "^4.0.2",
+    "rollup-plugin-svelte": "^5.2.2",
+    "rollup-plugin-terser": "^5.3.0",
+    "sapper": "^0.27.13",
+    "svelte": "^3.23.0",
+    "tailwindcss": "^1.4.6"
+  },
+  "scripts": {
+    "dev": "dotenv sapper dev",
+    "watch:tailwind": "postcss static/tailwind.css -o static/index.css -w",
+    "build:tailwind": "NODE_ENV=production postcss static/tailwind.css -o static/index.css",
+    "build": "npm run build:tailwind && node template-build.js && sapper build",
+    "start": "node __sapper__/build",
+    "test": "run-p --race dev cy:run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Smart-Programs/smartclips.git"
+  },
+  "keywords": [],
+  "author": "Garret Harp <garret@smartprograms.co>",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/Smart-Programs/smartclips/issues"
+  },
+  "homepage": "https://github.com/Smart-Programs/smartclips#readme"
+}
