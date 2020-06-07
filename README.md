@@ -112,8 +112,8 @@ https://www.notion.so/smartprograms/SmartClips-Errors-40c8582816f145b08d1a6ee421
 
 #### Stream Tracker
 
-[Documentation for creating your own Stream Tracker](doc/TRACKER.md)
+[Documentation for creating your own Stream Tracker](docs/TRACKER.md)
 
 #### Clip Function
 
-[Documentation for creating your own Clip Function](doc/CLIP.md)
+[Documentation for creating your own Clip Function](docs/CLIP.md)
