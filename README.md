@@ -104,3 +104,15 @@ Follow the same convention for defining this as the required environment variabl
 ## Running
 
 Once you have all the required environment variables run `npm run dev` and it will start the server on port 3000.
+
+# Close Source Documentation
+
+Here is some documentation on what the Stream Tracker, and Clip Function do without giving out our direct source for those.
+
+#### Tracker
+
+[Documentation](doc/TRACKER.md)
+
+#### Clip Function
+
+[Documentation](doc/CLIP.md)
