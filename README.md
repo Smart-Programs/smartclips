@@ -74,7 +74,7 @@ Follow the same convention for defining this as the required environment variabl
 - BRAINTREE_PUBLIC (Use your braintree Public key)
 - BRAINTREE_MERCHANT (Use your braintree Merchant ID)
 
-## Tracker - Required for creating clips
+#### Tracker - Required for creating clips
 
 - TRACKER_URL (A URL to a Mixer channel tracker to get their manifest files)
 
@@ -105,14 +105,15 @@ Follow the same convention for defining this as the required environment variabl
 
 Once you have all the required environment variables run `npm run dev` and it will start the server on port 3000.
 
-# Close Source Documentation
+# Resources
 
-Here is some documentation on what the Stream Tracker, and Clip Function do without giving out our direct source for those.
+#### Error Code Specification
+https://www.notion.so/smartprograms/SmartClips-Errors-40c8582816f145b08d1a6ee421fea03f
 
-#### Tracker
+#### Stream Tracker
 
-[Documentation](doc/TRACKER.md)
+[Documentation for creating your own Stream Tracker](doc/TRACKER.md)
 
 #### Clip Function
 
-[Documentation](doc/CLIP.md)
+[Documentation for creating your own Clip Function](doc/CLIP.md)
