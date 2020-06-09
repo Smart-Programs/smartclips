@@ -1,16 +1,8 @@
-import Account from '../../../../../data/account'
+import { Account } from '../../../../../data'
 
 import { respond, to, internalError, logger } from '../../../../../helpers'
 import { getUserByUsername } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   getUserByUsername.checks,
@@ -22,16 +14,7 @@ export const get = compose([
     } = req
 
     const [database_error, database_response] = await to(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI1PK-GSI1SK-index',
-        KeyConditionExpression:
-          'GSI1PK = :username and begins_with(GSI1SK, :usernameWithHash)',
-        ExpressionAttributeValues: {
-          ':username': `USER#${username.toUpperCase()}`,
-          ':usernameWithHash': `USER#${username.toUpperCase()}#${hash}`
-        }
-      }).promise()
+      Account.queryByUsernameAndHash({ username, hash })
     )
 
     if (database_error) {
@@ -50,22 +33,19 @@ export const get = compose([
       })
     }
 
-    const { Items, Count, LastEvaluatedKey } = database_response
-
-    const formattedItems = Items.map(Item => Account.toObject(Item))
+    const { Items, LastEvaluatedKey } = database_response
 
     return respond({
       res,
       req,
       body: {
-        Items: formattedItems,
+        Items,
         Page: {
           next:
-            formattedItems.length === 0 || LastEvaluatedKey === undefined
+            Items.length === 0 || LastEvaluatedKey === undefined
               ? null
-              : formattedItems[formattedItems.length - 1].id,
-          previous:
-            formattedItems.length === 0 || !next ? null : formattedItems[0].id
+              : Items[Items.length - 1].id,
+          previous: Items.length === 0 || !next ? null : Items[0].id
         }
       },
       status: 200

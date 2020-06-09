@@ -1,19 +1,11 @@
 import axios from 'axios'
-import Account from '../../../../data/account'
-import Auth from '../../../../data/auth'
+
 import createClipMixer from '../../../../helpers/clips/mixer'
 
+import { Account, Auth } from '../../../../data'
 import { to, respond, internalError, logger } from '../../../../helpers'
 import { createUserClip } from '../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   createUserClip.checks,
@@ -23,16 +15,14 @@ export const get = compose([
       query: { token, platform, length = 30, type }
     } = req
 
-    const [database_error, database_response] = await to(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI2PK-GSI2SK-index',
-        KeyConditionExpression: 'GSI2PK = :key and GSI2SK = :key',
-        ExpressionAttributeValues: {
-          ':key': `API#${token}`
-        },
-        Limit: 1
-      }).promise()
+    const [database_error, database_responses] = await to(
+      Promise.all([
+        Account.getByAPIKey({ apiKey: token, includePrivates: true }),
+        Auth.getAuthProviders({
+          accountId: token.split('-')[0],
+          provider: platform
+        })
+      ])
     )
 
     if (database_error) {
@@ -58,9 +48,11 @@ export const get = compose([
       }
     }
 
-    const { Items, Count, LastEvaluatedKey } = database_response
+    const [database_response, platformResponse] = database_responses
 
-    if (Count === 0 || Items.length === 0) {
+    const { Item } = database_response
+
+    if (!Item) {
       logger.error({
         request_id: req.request_id,
         error: { code: '1200', class: 'dynamo' },
@@ -93,8 +85,6 @@ export const get = compose([
       }
     }
 
-    const Item = Account.toObject(Items[0], true)
-
     if (!Item.usage) {
       logger.error(
         {
@@ -116,49 +106,10 @@ export const get = compose([
           code: '1100'
         })
       }
-    }
-
-    // TODO: Check subscriber status
-
-    const [db_error, platformResponse] = await to(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI1PK-GSI1SK-index',
-        KeyConditionExpression: 'GSI1PK = :account AND GSI1SK = :platform',
-        ExpressionAttributeValues: {
-          ':account': `ACCOUNT#${Item.id}`,
-          ':platform': `AUTH#${platform}`
-        }
-      }).promise()
-    )
-
-    if (db_error) {
-      logger.error(
-        {
-          request_id: req.request_id,
-          error: { code: '1000', class: 'dynamo' }
-        },
-        db_error
-      )
-
-      if (type === 'text') {
-        res.statusCode = 200
-        return res.end(
-          `Internal Server Error 1000: Could not complete the request. (Identifier ${req.request_id})`
-        )
-      } else {
-        return internalError({
-          req,
-          res,
-          code: '1000'
-        })
-      }
-    }
-
-    if (
+    } else if (
       !platformResponse ||
       !platformResponse.Items ||
-      platformResponse.Items.length < 1
+      platformResponse.Items.length !== 1
     ) {
       logger.error({
         request_id: req.request_id,
@@ -194,7 +145,9 @@ export const get = compose([
       }
     }
 
-    const platformAccount = Auth.toObject(platformResponse.Items[0])
+    const platformAccount = platformResponse.Items[0]
+
+    // TODO: Check subscriber status
 
     const {
       created,
@@ -246,7 +199,7 @@ export const get = compose([
       return respond({
         res,
         body: {
-          Account: Account.toObject(Items[0]),
+          Account: Item,
           Clip: clip,
           message
         },

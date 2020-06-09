@@ -1,3 +1,5 @@
+import DocumentClient from './DocumentClient'
+
 export default class Auth {
   constructor ({
     id,
@@ -63,5 +65,50 @@ export default class Auth {
       provider: provider,
       id: Item.PK.replace(`${Item.GSI1SK}#`, '')
     }
+  }
+
+  static getAuthProviderByID ({ provider, id }) {
+    return DocumentClient.get({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      Key: {
+        PK: `AUTH#${provider}#${id}`,
+        SK: `AUTH#${provider}#${id}`
+      }
+    })
+      .promise()
+      .then(({ Item }) => ({
+        Item: this.toObject(Item)
+      }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static getAuthProviders ({ accountId, provider, includeTokens = false }) {
+    const KeyConditionExpression = provider
+      ? 'GSI1PK = :account AND GSI1SK = :platform'
+      : 'GSI1PK = :account'
+    const ExpressionAttributeValues = provider
+      ? {
+          ':account': `ACCOUNT#${accountId}`,
+          ':platform': `AUTH#${provider}`
+        }
+      : {
+          ':account': `ACCOUNT#${accountId}`
+        }
+
+    const Limit = provider ? 1 : 10
+
+    return DocumentClient.query({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      IndexName: 'GSI1PK-GSI1SK-index',
+      KeyConditionExpression,
+      ExpressionAttributeValues,
+      Limit
+    })
+      .promise()
+      .then(({ Items, LastEvaluatedKey }) => ({
+        Items: Items.map(i => this.toObject(i, includeTokens)),
+        LastEvaluatedKey
+      }))
+      .catch(err => Promise.reject(err))
   }
 }

@@ -1,6 +1,5 @@
-import Account from '../../../../../data/account'
+import { Account } from '../../../../../data'
 
-import { DynamoDB } from 'aws-sdk'
 import {
   getSubscription,
   getToken,
@@ -12,26 +11,13 @@ import {
 import { currentUserAuth } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
 
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
-
 export const get = compose([
   currentUserAuth.validate,
   async (req, res) => {
     const current = req.session.user
 
     const [database_error, database_response] = await to(
-      DocumentClient.get({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        Key: {
-          PK: `ACCOUNT#${current.account}`,
-          SK: `ACCOUNT#${current.account}`
-        }
-      }).promise()
+      Account.getByID({ accountId: current.account, includePrivates: true })
     )
 
     if (database_error) {
@@ -48,10 +34,21 @@ export const get = compose([
         req,
         code: '1000'
       })
+    } else if (database_response.Item) {
+      logger.error({
+        request_id: req.request_id,
+        error: { code: '1100', class: 'dynamo' },
+        query: { type: 'Account.getByID', id: current.account }
+      })
+
+      return internalError({
+        res,
+        req,
+        code: '1100'
+      })
     }
 
-    const { Item } = database_response
-    const account = Account.toObject(Item, true)
+    const { Item: account } = database_response
 
     const [braintree_error, braintree_responses] = await to(
       Promise.all([

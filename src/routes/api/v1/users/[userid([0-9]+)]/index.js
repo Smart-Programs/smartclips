@@ -1,17 +1,8 @@
-import Account from '../../../../../data/account'
-import Auth from '../../../../../data/auth'
+import { Account, Auth } from '../../../../../data'
 
 import { respond, to, internalError, logger } from '../../../../../helpers'
 import { getUserById } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   getUserById.checks,
@@ -22,26 +13,9 @@ export const get = compose([
       query: { includeSocials }
     } = req
 
-    let promises = [
-      DocumentClient.get({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        Key: {
-          PK: `ACCOUNT#${userid}`,
-          SK: `ACCOUNT#${userid}`
-        }
-      }).promise()
-    ]
+    let promises = [Account.getByID({ accountId: userid })]
 
-    promises.push(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI1PK-GSI1SK-index',
-        KeyConditionExpression: 'GSI1PK = :account',
-        ExpressionAttributeValues: {
-          ':account': `ACCOUNT#${userid}`
-        }
-      }).promise()
-    )
+    promises.push(Auth.getAuthProviders({ accountId: userid }))
 
     const [database_error, database_results] = await to(Promise.all(promises))
 
@@ -93,13 +67,13 @@ export const get = compose([
     }
 
     const body = {
-      User: Account.toObject(User)
+      User
     }
 
     if (includeSocials) {
       const { Items: Socials } = database_results[1]
 
-      body.Socials = Socials.map(social => Auth.toObject(social))
+      body.Socials = Socials
     }
 
     return respond({
