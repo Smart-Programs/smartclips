@@ -74,8 +74,6 @@ NODE_ENV=development
 
 Follow the same convention for defining this as the required environment variables.
 
-#### Braintree
-
 #### Tracker - Required for creating clips
 
 - TRACKER_URL (A URL to a Mixer channel tracker to get their manifest files)
