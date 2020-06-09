@@ -11,7 +11,7 @@ export const get = compose([
   async (req, res) => {
     const current = req.session.user
 
-    const [database_error, account] = await to(
+    const [database_error, database_response] = await to(
       Account.getByID({ accountId: current.account, includePrivates: true })
     )
 
@@ -29,7 +29,7 @@ export const get = compose([
         req,
         code: '1000'
       })
-    } else if (!account || !account.id) {
+    } else if (!database_response.Item) {
       logger.error({
         request_id: req.request_id,
         error: { code: '1100', class: 'dynamo' },
@@ -42,6 +42,8 @@ export const get = compose([
         code: '1100'
       })
     }
+
+    const { Item: account } = database_response
 
     const actionFile = MIU.replace('%USER_API_TOKEN%', account.api)
 
