@@ -9,17 +9,15 @@
 
       if (response.status === 401) return Promise.resolve({ user: "delete" });
 
-      return Promise.resolve({}); // temporary until subscriptions are setup
+      const data = await response.json();
 
-      // const data = await response.json();
+      if (response.status !== 200)
+        return this.error(
+          response.status,
+          data.message || "Internal Server Error"
+        );
 
-      // if (response.status !== 200)
-      //   return this.error(
-      //     response.status,
-      //     data.message || "Internal Server Error"
-      //   );
-
-      // return Promise.resolve(data);
+      return Promise.resolve(data);
     } catch (error) {
       console.error(error);
       return this.error(500, "Could not get user.");
