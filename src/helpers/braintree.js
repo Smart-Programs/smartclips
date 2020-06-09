@@ -1,5 +1,26 @@
-export const getSubscription = async (gateway, customerId) => {
-  const free = { subscription: null, plan: null, meta: getPlanMeta() }
+import { BraintreeGateway, Environment } from 'braintree'
+
+const gateway = new BraintreeGateway({
+  environment: Environment[process.env.BRAINTREE_ENV],
+  merchantId: process.env.BRAINTREE_MERCHANT,
+  privateKey: process.env.BRAINTREE_PRIVATE,
+  publicKey: process.env.BRAINTREE_PUBLIC
+})
+
+gateway.timeout = 5000
+
+export const getToken = async customerId => {
+  if (customerId) return gateway.clientToken.generate({ customerId })
+  else return gateway.clientToken.generate()
+}
+
+export const getSubscription = async customerId => {
+  const free = {
+    subscription: null,
+    plan: { name: 'Free' },
+    meta: getPlanMeta()
+  }
+
   if (typeof customerId !== 'string' || customerId === '')
     return Promise.resolve(free)
 

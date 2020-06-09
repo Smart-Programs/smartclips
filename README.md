@@ -11,10 +11,7 @@ If you would like to help we would appreciate it! Let us know if you need any he
 - NodeJS: [Download Here](https://nodejs.org/en/download/)
 - DynamoDB Local: [Download Here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
 - Mixer OAuth Application: [Create Here](https://mixer.com/lab/oauth)
-
-## Recommended
-
-- Braintree (For subscription stuff -- may be required for some things): [Create Sandbox](https://www.braintreepayments.com/sandbox)
+- Braintree (For subscription stuff): [Create Sandbox](https://www.braintreepayments.com/sandbox)
 
 ## Other stuff
 
@@ -30,6 +27,11 @@ These environment variables should go in a `.env` file.
 - DYNAMO_ACCESS_SECRET (anything if using local)
 - DYNAMO_REGION (use us-west-2 if using local)
 - DYNAMO_ENDPOINT (http://localhost:8000 if using local)
+
+- BRAINTREE_ENV (Use "Sandbox")
+- BRAINTREE_PRIVATE (Use your braintree Private key)
+- BRAINTREE_PUBLIC (Use your braintree Public key)
+- BRAINTREE_MERCHANT (Use your braintree Merchant ID)
 
 - MIXER_API (Use "https://mixer.com/api/v1")
 - MIXER_CLIENT (Your client ID from your OAuth Application)
@@ -51,6 +53,11 @@ DYNAMO_ACCESS_SECRET=test
 DYNAMO_REGION=us-west-2
 DYNAMO_ENDPOINT=http://localhost:8000
 
+BRAINTREE_ENV=Sandbox
+BRAINTREE_PRIVATE=aaa
+BRAINTREE_PUBLIC=bbb
+BRAINTREE_MERCHANT=ccc
+
 MIXER_API=https://mixer.com/api/v1
 MIXER_CLIENT=aaaaaaaaa
 MIXER_SECRET=zzzzzzzzz
@@ -68,11 +75,6 @@ NODE_ENV=development
 Follow the same convention for defining this as the required environment variables.
 
 #### Braintree
-
-- BRAINTREE_ENV (Use "Sandbox")
-- BRAINTREE_PRIVATE (Use your braintree Private key)
-- BRAINTREE_PUBLIC (Use your braintree Public key)
-- BRAINTREE_MERCHANT (Use your braintree Merchant ID)
 
 #### Tracker - Required for creating clips
 
@@ -108,6 +110,7 @@ Once you have all the required environment variables run `npm run dev` and it wi
 # Resources
 
 #### Error Code Specification
+
 https://www.notion.so/smartprograms/SmartClips-Errors-40c8582816f145b08d1a6ee421fea03f
 
 #### Stream Tracker
