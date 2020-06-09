@@ -269,7 +269,8 @@ export async function post (req, res) {
   } else {
     created = false
 
-    account.id = Item.account
+    const account_id = Item.GSI1PK.replace('ACCOUNT#', '')
+    account.id = account_id
 
     const [promise_error, promise_results] = await to(
       Promise.all([
