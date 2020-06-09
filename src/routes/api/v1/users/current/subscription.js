@@ -34,7 +34,7 @@ export const get = compose([
         req,
         code: '1000'
       })
-    } else if (database_response.Item) {
+    } else if (!database_response.Item) {
       logger.error({
         request_id: req.request_id,
         error: { code: '1100', class: 'dynamo' },
