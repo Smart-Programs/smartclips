@@ -1,7 +1,5 @@
 import axios from 'axios'
-import Account from '../../../../../data/account'
-import Auth from '../../../../../data/auth'
-import Clip from '../../../../../data/clip'
+import { Auth, Clip } from '../../../../../data'
 
 import { decodeTime } from 'ulid'
 import {
@@ -35,32 +33,11 @@ export const get = compose([
     const time = next || previous ? decodeTime(next || previous) : Date.now()
 
     const promises = [
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        KeyConditionExpression: `PK = :account and SK ${
-          next ? '<' : previous ? '>' : '<='
-        } :range`,
-        ExpressionAttributeValues: {
-          ':account': `ACCOUNT#${userid}`,
-          ':range':
-            next || previous ? `#CLIP#${next || previous}` : `ACCOUNT#${userid}`
-        },
-        ScanIndexForward: false,
-        Limit: 30
-      }).promise()
+      Clip.queryUserClips({ accountId: userid, next, previous })
     ]
 
     if (includeSocials) {
-      promises.push(
-        DocumentClient.query({
-          TableName: process.env.DYNAMO_TABLE_NAME,
-          IndexName: 'GSI1PK-GSI1SK-index',
-          KeyConditionExpression: 'GSI1PK = :account',
-          ExpressionAttributeValues: {
-            ':account': `ACCOUNT#${userid}`
-          }
-        }).promise()
-      )
+      promises.push(Auth.getAuthProviders({ accountId: userid }))
     }
 
     const [database_error, database_response] = await to(Promise.all(promises))
@@ -73,6 +50,8 @@ export const get = compose([
         },
         database_error
       )
+
+      console.log({ database_error })
 
       return internalError({
         res,
@@ -112,27 +91,10 @@ export const get = compose([
       })
     }
 
-    const accountIndex = Items.findIndex(
-      I => I.GSI1PK && I.GSI1PK.startsWith('USER#')
-    )
-
-    const ClipItems = Items.map((Item, index) => {
-      if (index !== accountIndex)
-        return {
-          ...Clip.toObject(Item),
-          type: 'Clip'
-        }
-      else
-        return {
-          ...Account.toObject(Item, false),
-          type: 'Account'
-        }
-    })
-
     if (includeSocials) {
-      ClipItems.push({
+      Items.push({
         type: 'Socials',
-        Items: database_response[1].Items.map(item => Auth.toObject(item))
+        Items: database_response[1].Items
       })
     }
 
@@ -140,12 +102,10 @@ export const get = compose([
       req,
       res,
       body: {
-        Items: ClipItems,
+        Items,
         Page: {
-          next:
-            ClipItems.length === 0 ? null : ClipItems[ClipItems.length - 1].id,
-          previous:
-            ClipItems.length === 0 ? getFutureULID(time) : ClipItems[0].id,
+          next: Items.length === 0 ? null : Items[Items.length - 1].id,
+          previous: Items.length === 0 ? getFutureULID(time) : Items[0].id,
           note:
             'Previous may have a value even if there are no more clips past the page you are on.'
         }

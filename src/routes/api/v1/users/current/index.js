@@ -1,16 +1,8 @@
-import Account from '../../../../../data/account'
+import { Account } from '../../../../../data'
 
 import { respond, to, internalError, logger } from '../../../../../helpers'
 import { currentUserAuth } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   currentUserAuth.validate,
@@ -18,13 +10,7 @@ export const get = compose([
     const current = req.session.user
 
     const [database_error, database_response] = await to(
-      DocumentClient.get({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        Key: {
-          PK: `ACCOUNT#${current.account}`,
-          SK: `ACCOUNT#${current.account}`
-        }
-      }).promise()
+      Account.getByID({ accountId: current.account, includePrivates: true })
     )
 
     if (database_error) {
@@ -41,45 +27,28 @@ export const get = compose([
         req,
         code: '1000'
       })
-    }
-
-    const { Item } = database_response
-
-    if (!Item) {
+    } else if (!database_response.Item) {
       logger.error({
         request_id: req.request_id,
-        error: { code: '1200', class: 'dynamo' },
-        request: {
-          type: 'get',
-          keys: {
-            PK: `ACCOUNT#${current.account}`,
-            SK: `ACCOUNT#${current.account}`
-          }
-        }
+        error: { code: '1100', class: 'dynamo' },
+        query: { type: 'Account.getByID', id: current.account }
       })
 
-      return respond({
+      console.log({ database_response })
+
+      return internalError({
         res,
         req,
-        errors: {
-          message: 'Not Found',
-          list: [
-            {
-              msg: `Invalid account`,
-              location: 'internal-1200'
-            }
-          ]
-        },
-        status: 404
+        code: '1100'
       })
     }
 
-    const formattedItem = Account.toObject(Item, true)
+    const { Item: account } = database_response
 
     return respond({
       res,
       req,
-      body: formattedItem,
+      body: account,
       status: 200
     })
   }

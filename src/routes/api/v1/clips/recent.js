@@ -1,12 +1,9 @@
 import axios from 'axios'
-import Clip from '../../../../data/clip'
-import Account from '../../../../data/account'
 
+import { Clip, Account } from '../../../../data'
 import { ulid, decodeTime } from 'ulid'
 import { compose } from 'compose-middleware'
 import { getRecentClips } from '../../../../helpers/validators'
-import { DynamoDB } from 'aws-sdk'
-
 import {
   isULID,
   getPastULID,
@@ -17,71 +14,6 @@ import {
   logger
 } from '../../../../helpers'
 
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
-
-const getClips = (
-  start = { next: null, previous: null },
-  { maxItems = 30, maxPages = 3 } = {}
-) => {
-  let items = []
-  const loop = async ({ next, previous, page = 1 }) => {
-    const time = next || previous ? decodeTime(next || previous) : Date.now()
-
-    const ExpressionAttributeValues = {
-      ':recent': `RC#${ulid(time).substring(0, 4)}`
-    }
-
-    if (next || previous) ExpressionAttributeValues[':range'] = next || previous
-
-    const [database_error, database_response] = await to(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI2PK-GSI2SK-index',
-        KeyConditionExpression: `GSI2PK = :recent${
-          next ? ' and GSI2SK < :range' : previous ? ' and GSI2SK > :range' : ''
-        }`,
-        ExpressionAttributeValues: ExpressionAttributeValues,
-        ScanIndexForward: false,
-        Limit: maxItems
-      }).promise()
-    )
-
-    if (database_error) return Promise.reject(database_error)
-
-    const { Items } = database_response
-    if (previous) items = [...Items, ...items]
-    else items = [...items, ...Items]
-
-    if (items.length >= maxItems || page >= maxPages)
-      return Promise.resolve({ Items: items, time })
-
-    const pages = {
-      next: previous
-        ? null
-        : Items.length === 0
-        ? getPastULID(time)
-        : Items[Items.length - 1].SK.replace('#CLIP#', ''),
-      previous: !previous
-        ? null
-        : Items.length === 0
-        ? getFutureULID(time)
-        : Items[0].SK.replace('#CLIP#', ''),
-      page: ++page
-    }
-
-    if (!next && !previous) return Promise.resolve({ Items: items, time })
-
-    return loop(pages)
-  }
-
-  return loop(start)
-}
-
 export const get = compose([
   getRecentClips.checks,
   getRecentClips.validate,
@@ -91,7 +23,11 @@ export const get = compose([
     } = req
 
     const [database_error, database_response] = await to(
-      getClips({ next, previous }, { maxItems: limit })
+      Clip.queryRecentClips({
+        start: { next, previous },
+        Limit: limit,
+        maxPages: 4
+      })
     )
 
     if (database_error) {
@@ -138,22 +74,14 @@ export const get = compose([
       })
     }
 
-    const accountIds = Items.map(item => ({
-      PK: item.PK,
-      SK: item.PK
+    const accountIds = Items.map(({ account }) => ({
+      PK: `ACCOUNT#${account}`,
+      SK: `ACCOUNT#${account}`
     })).filter(
-      (item, index) => Items.findIndex(i => i.PK === item.PK) === index
+      ({ PK }, index, a) => a.findIndex(({ SK }) => PK === SK) === index
     )
 
-    const [db_error, getAccountIds] = await to(
-      DocumentClient.batchGet({
-        RequestItems: {
-          [process.env.DYNAMO_TABLE_NAME]: {
-            Keys: accountIds
-          }
-        }
-      }).promise()
-    )
+    const [db_error, accounts] = await to(Account.getAllByID({ accountIds }))
 
     if (db_error) {
       logger.error(
@@ -167,32 +95,10 @@ export const get = compose([
       return internalError({ req, res, code: '1000' })
     }
 
-    if (
-      !getAccountIds ||
-      !getAccountIds.Responses ||
-      !getAccountIds.Responses[process.env.DYNAMO_TABLE_NAME]
-    ) {
-      logger.error({
-        request_id: req.request_id,
-        error: { code: '1100', class: 'dynamo' },
-        request: {
-          type: 'batchGet',
-          keys: accountIds
-        }
-      })
-
-      return internalError({ req, res, code: '1100' })
-    }
-
     const ClipItems = Items.map((Item, index) => {
       return {
-        ...Clip.toObject(Item),
-        type: 'Clip',
-        User: Account.toObject(
-          getAccountIds.Responses[process.env.DYNAMO_TABLE_NAME].find(
-            i => i.PK === Item.PK
-          )
-        )
+        ...Item,
+        User: accounts.Items.find(i => i.id === Item.account)
       }
     })
 

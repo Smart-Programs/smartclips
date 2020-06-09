@@ -1,3 +1,5 @@
+import DocumentClient from './DocumentClient'
+
 import { customAlphabet, nanoid } from 'nanoid'
 
 const NUMBERS = '0123456789'
@@ -32,7 +34,8 @@ export default class Account {
       currentClipViews = 0,
       currentClipLikes = 0,
       currentClipComments = 0,
-      braintreeId = ''
+      braintreeId = '',
+      partner = false
     },
     validate = false
   ) {
@@ -76,6 +79,7 @@ export default class Account {
     }
 
     this.braintreeId = braintreeId
+    this.partner = partner
   }
 
   validate () {
@@ -129,7 +133,8 @@ export default class Account {
         verified: this.verified,
         createdAt: this.createdAt,
         bio: this.bio,
-        beep: this.beep
+        beep: this.beep,
+        partner: this.partner
       },
       usage: {
         day: this.day,
@@ -145,7 +150,8 @@ export default class Account {
 
     const object = {
       ...Item.data,
-      id: Item.PK.replace('ACCOUNT#', '')
+      id: Item.PK.replace('ACCOUNT#', ''),
+      type: 'Account'
     }
 
     if (includePrivates) {
@@ -159,5 +165,85 @@ export default class Account {
     }
 
     return object
+  }
+
+  static getByID ({ accountId, includePrivates = false }) {
+    if (isNaN(Number(accountId)))
+      throw new Error('Invalid accountId at getByID')
+
+    return DocumentClient.get({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      Key: {
+        PK: `ACCOUNT#${accountId}`,
+        SK: `ACCOUNT#${accountId}`
+      }
+    })
+      .promise()
+      .then(({ Item }) => ({ Item: this.toObject(Item, includePrivates) }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static getAllByID ({ accountIds }) {
+    return DocumentClient.batchGet({
+      RequestItems: {
+        [process.env.DYNAMO_TABLE_NAME]: {
+          Keys: accountIds
+        }
+      }
+    })
+      .promise()
+      .then(({ Responses }) => ({
+        Items: Responses[process.env.DYNAMO_TABLE_NAME].map(Item =>
+          this.toObject(Item)
+        )
+      }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static getByAPIKey ({ apiKey = '', includePrivates = false }) {
+    if (apiKey.match(/([0-9]+)-(.+)/).length === 0)
+      throw new Error('Invalid apiKey at getByAPIKey')
+
+    return DocumentClient.query({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      IndexName: 'GSI2PK-GSI2SK-index',
+      KeyConditionExpression: 'GSI2PK = :key and GSI2SK = :key',
+      ExpressionAttributeValues: {
+        ':key': `API#${apiKey}`
+      },
+      Limit: 1
+    })
+      .promise()
+      .then(({ Items }) => ({
+        Item:
+          Items.length === 0 ? null : this.toObject(Items[0], includePrivates)
+      }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static queryByUsernameAndHash ({
+    username = '',
+    hash = '',
+    includePrivates = false
+  }) {
+    if (!isNaN(Number(username))) throw new Error('Invalid username at getByID')
+    else if (isNaN(Number(hash))) throw new Error('Invalid hash at getByID')
+
+    return DocumentClient.query({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      IndexName: 'GSI1PK-GSI1SK-index',
+      KeyConditionExpression:
+        'GSI1PK = :username and begins_with(GSI1SK, :usernameWithHash)',
+      ExpressionAttributeValues: {
+        ':username': `USER#${username.toUpperCase()}`,
+        ':usernameWithHash': `USER#${username.toUpperCase()}#${hash}`
+      }
+    })
+      .promise()
+      .then(({ Items, LastEvaluatedKey }) => ({
+        Items: Items.map(Item => this.toObject(Item, includePrivates)),
+        LastEvaluatedKey
+      }))
+      .catch(err => Promise.reject(err))
   }
 }

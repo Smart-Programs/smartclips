@@ -1,30 +1,7 @@
+import DocumentClient from '../../data/DocumentClient'
 import axios from 'axios'
 
-import { DynamoDB } from 'aws-sdk'
-
-import Account from '../../data/account'
-import Auth from '../../data/auth'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
-
-const params = {
-  client_id: process.env.MIXER_CLIENT,
-  redirect_uri: process.env.MIXER_REDIRECT,
-  scope: process.env.MIXER_SCOPE,
-  response_type: 'code'
-}
-
-const queryString = Object.keys(params)
-  .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-  .join('&')
-
-const url = state =>
-  `https://mixer.com/oauth/authorize?${queryString}&state=${state}`
+import { Account, Auth } from '../../data'
 
 const respond = (res, { body = {}, status = 200 }) => {
   res.setHeader('Content-Type', 'application/json')
@@ -212,10 +189,7 @@ export async function post (req, res) {
   let created = true
 
   const [database_error, database_response] = await to(
-    DocumentClient.get({
-      TableName: process.env.DYNAMO_TABLE_NAME,
-      Key: auth.key()
-    }).promise()
+    Auth.getAuthProviderByID({ provider: 'MIXER', id: user.data.id })
   )
 
   if (database_error) {
@@ -364,6 +338,20 @@ export async function post (req, res) {
     status: 200
   })
 }
+
+const params = {
+  client_id: process.env.MIXER_CLIENT,
+  redirect_uri: process.env.MIXER_REDIRECT,
+  scope: process.env.MIXER_SCOPE,
+  response_type: 'code'
+}
+
+const queryString = Object.keys(params)
+  .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+  .join('&')
+
+const url = state =>
+  `https://mixer.com/oauth/authorize?${queryString}&state=${state}`
 
 export async function get (req, res) {
   let { returnTo, includeApiKey } = req.query

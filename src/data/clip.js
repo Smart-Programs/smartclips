@@ -1,4 +1,9 @@
+import DocumentClient from './DocumentClient'
+
+import Account from './account'
+
 import { ulid as generateId, decodeTime as getCreated } from 'ulid'
+import { to, getFutureULID, getPastULID } from '../helpers'
 
 const STATUSES = {
   WORKING: 0,
@@ -131,11 +136,122 @@ export default class Clip {
       meta: {
         ...Item.data,
         createdAt: getCreated(Item.SK.replace('#CLIP#', ''))
-      }
+      },
+      type: 'Clip'
     }
 
     delete item.meta.status
 
     return item
+  }
+
+  static getClipByID ({ accountId, clipId }) {
+    return DocumentClient.get({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      Key: {
+        PK: `ACCOUNT#${accountId}`,
+        SK: `#CLIP#${clipId}`
+      }
+    })
+      .promise()
+      .then(({ Item }) => ({
+        Item: this.toObject(Item)
+      }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static queryUserClips ({ accountId, next, previous, Limit = 30 }) {
+    return DocumentClient.query({
+      TableName: process.env.DYNAMO_TABLE_NAME,
+      KeyConditionExpression: `PK = :account and SK ${
+        next ? '<' : previous ? '>' : '<='
+      } :range`,
+      ExpressionAttributeValues: {
+        ':account': `ACCOUNT#${accountId}`,
+        ':range':
+          next || previous
+            ? `#CLIP#${next || previous}`
+            : `ACCOUNT#${accountId}`
+      },
+      ScanIndexForward: false,
+      Limit
+    })
+      .promise()
+      .then(({ Items, LastEvaluatedKey }) => ({
+        Items: Items.map(i =>
+          i.SK.startsWith('ACCOUNT#') ? Account.toObject(i) : this.toObject(i)
+        ),
+        LastEvaluatedKey
+      }))
+      .catch(err => Promise.reject(err))
+  }
+
+  static queryRecentClips ({
+    start = { next: null, previous: null },
+    Limit,
+    maxPages
+  }) {
+    let allItems = []
+    const loop = async ({ next, previous, page = 1 }) => {
+      const time = next || previous ? getCreated(next || previous) : Date.now()
+
+      const ExpressionAttributeValues = {
+        ':recent': `RC#${generateId(time).substring(0, 4)}`
+      }
+
+      if (next || previous)
+        ExpressionAttributeValues[':range'] = next || previous
+
+      const [database_error, database_response] = await to(
+        DocumentClient.query({
+          TableName: process.env.DYNAMO_TABLE_NAME,
+          IndexName: 'GSI2PK-GSI2SK-index',
+          KeyConditionExpression: `GSI2PK = :recent${
+            next
+              ? ' and GSI2SK < :range'
+              : previous
+              ? ' and GSI2SK > :range'
+              : ''
+          }`,
+          ExpressionAttributeValues: ExpressionAttributeValues,
+          ScanIndexForward: false,
+          Limit
+        })
+          .promise()
+          .then(({ Items }) => ({
+            Items: Items.map(i => this.toObject(i))
+          }))
+          .catch(err => Promise.reject(err))
+      )
+
+      if (database_error) return Promise.reject(database_error)
+
+      const { Items } = database_response
+      if (previous) allItems = [...Items, ...allItems]
+      else allItems = [...allItems, ...Items]
+
+      if (allItems.length >= Limit || page >= maxPages)
+        return Promise.resolve({ Items: allItems, time })
+
+      const pages = {
+        next: previous
+          ? null
+          : Items.length === 0
+          ? getPastULID(time)
+          : Items[Items.length - 1].id,
+        previous: !previous
+          ? null
+          : Items.length === 0
+          ? getFutureULID(time)
+          : Items[0].id,
+        page: ++page
+      }
+
+      if (!next && !previous) return Promise.resolve({ Items: allItems, time })
+
+      return loop(pages)
+    }
+
+    return loop(start)
   }
 }

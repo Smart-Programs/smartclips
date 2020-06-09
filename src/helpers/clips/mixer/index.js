@@ -1,11 +1,10 @@
-import { ulid as generateId } from 'ulid'
-
 import axios from 'axios'
 import getStreamFiles from './getStreamFiles'
 import createClipDocument from './createClipDocument'
 import updateClipDocument from '../updateClipDocument'
 
 import { logger, to } from '../../index'
+import { ulid as generateId } from 'ulid'
 import { invokeFunction } from '../../oracle'
 
 const STATUSES = {

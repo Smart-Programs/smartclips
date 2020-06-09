@@ -9,10 +9,10 @@ const gateway = new BraintreeGateway({
 
 gateway.timeout = 5000
 
-export const getToken = async customerId => {
-  if (customerId) return gateway.clientToken.generate({ customerId })
-  else return gateway.clientToken.generate()
-}
+export const getToken = async customerId =>
+  customerId
+    ? gateway.clientToken.generate({ customerId })
+    : gateway.clientToken.generate()
 
 export const getSubscription = async customerId => {
   const free = {

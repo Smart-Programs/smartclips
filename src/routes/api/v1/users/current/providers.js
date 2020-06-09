@@ -1,16 +1,8 @@
-import Auth from '../../../../../data/auth'
+import { Auth } from '../../../../../data'
 
 import { respond, to, internalError, logger } from '../../../../../helpers'
 import { currentUserAuth } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   currentUserAuth.validate,
@@ -22,14 +14,10 @@ export const get = compose([
     } = req
 
     const [database_error, database_response] = await to(
-      DocumentClient.query({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        IndexName: 'GSI1PK-GSI1SK-index',
-        KeyConditionExpression: 'GSI1PK = :account',
-        ExpressionAttributeValues: {
-          ':account': `ACCOUNT#${current.account}`
-        }
-      }).promise()
+      Auth.getAuthProviders({
+        accountId: current.account,
+        includeTokens: false
+      })
     )
 
     if (database_error) {
@@ -48,7 +36,7 @@ export const get = compose([
       })
     }
 
-    const { Items, Count, LastEvaluatedKey } = database_response
+    const { Items } = database_response
 
     if (!Items || !Items.length) {
       logger.error(
@@ -76,12 +64,10 @@ export const get = compose([
       })
     }
 
-    const formattedItems = Items.map(Item => Auth.toObject(Item))
-
     return respond({
       res,
       req,
-      body: { Items: formattedItems, Count, LastEvaluatedKey },
+      body: database_response,
       status: 200
     })
   }

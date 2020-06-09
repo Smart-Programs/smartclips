@@ -1,14 +1,7 @@
+import DocumentClient from '../../../data/DocumentClient'
 import axios from 'axios'
-import Clip from '../../../data/clip'
 
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
+import { Clip } from '../../../data'
 
 const dateIsToday = (date, now = new Date()) =>
   date.getFullYear() === now.getFullYear() &&

@@ -1,16 +1,7 @@
-import Clip from '../../../../../../data/clip'
-
+import { Clip } from '../../../../../../data'
 import { respond, to, internalError, logger } from '../../../../../../helpers'
 import { getUserClip } from '../../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   getUserClip.checks,
@@ -21,13 +12,7 @@ export const get = compose([
     } = req
 
     const [database_error, database_response] = await to(
-      DocumentClient.get({
-        TableName: process.env.DYNAMO_TABLE_NAME,
-        Key: {
-          PK: `ACCOUNT#${userid}`,
-          SK: `#CLIP#${clipid}`
-        }
-      }).promise()
+      Clip.getClipByID({ accountId: userid, clipId: clipid })
     )
 
     if (database_error) {
@@ -78,11 +63,9 @@ export const get = compose([
       })
     }
 
-    const formattedItem = Clip.toObject(Item, false)
-
     return respond({
       res,
-      body: formattedItem
+      body: Item
     })
   }
 ])
