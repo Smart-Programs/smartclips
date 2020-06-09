@@ -63,7 +63,8 @@ export default class Auth {
     return {
       ...Item.data,
       provider: provider,
-      id: Item.PK.replace(`${Item.GSI1SK}#`, '')
+      id: Item.PK.replace(`${Item.GSI1SK}#`, ''),
+      account: Item.GSI1PK.replace('ACCOUNT#', '')
     }
   }
 
