@@ -170,6 +170,7 @@ export default async function createClipMixer ({
   return Promise.resolve({
     created: true,
     clip: document.clip,
-    message: 'The clip has been created successfully.'
+    message: 'The clip has been created successfully.',
+    url: `${process.env.WEBSITE_URL}/${document.clip.account}/${document.clip.id}`
   })
 }

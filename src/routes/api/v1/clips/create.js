@@ -152,6 +152,7 @@ export const get = compose([
     const {
       created,
       message,
+      url,
       code,
       errors,
       status,
@@ -201,7 +202,8 @@ export const get = compose([
         body: {
           Account: Item,
           Clip: clip,
-          message
+          message,
+          clip_url: url
         },
         status: 200
       })
