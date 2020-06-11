@@ -1,5 +1,6 @@
 import { query, param, oneOf, validationResult } from 'express-validator'
-import { isULID, ulidValidation, respond } from './'
+import { isULID, ulidValidation, internalError, respond, to } from './'
+import { Account } from '../data'
 
 const validate = (req, res, next) => {
   const errors = validationResult(req)
@@ -120,7 +121,7 @@ export const getUserByUsername = {
 }
 
 export const currentUserAuth = {
-  validate: (req, res, next) => {
+  validate: async (req, res, next) => {
     const current = req.session.user
 
     if (!current || !current.account) {
@@ -140,6 +141,63 @@ export const currentUserAuth = {
         status: 401
       })
     }
+
+    next()
+  },
+  validateAndSet: async (req, res, next) => {
+    const current = req.session.user
+
+    if (!current || !current.account) {
+      return respond({
+        res,
+        req,
+        errors: {
+          message: 'Bad Authorization',
+          list: [
+            {
+              msg: `Value is invalid`,
+              param: 'token',
+              location: 'query'
+            }
+          ]
+        },
+        status: 401
+      })
+    }
+
+    const [database_error, database_response] = await to(
+      Account.getByID({ accountId: current.account, includePrivates: true })
+    )
+
+    if (database_error) {
+      logger.error(
+        {
+          request_id: req.request_id,
+          error: { code: '1000', class: 'dynamo' }
+        },
+        database_error
+      )
+
+      return internalError({
+        res,
+        req,
+        code: '1000'
+      })
+    } else if (!database_response.Item) {
+      logger.error({
+        request_id: req.request_id,
+        error: { code: '1100', class: 'dynamo' },
+        query: { type: 'Account.getByID', id: current.account }
+      })
+
+      return internalError({
+        res,
+        req,
+        code: '1100'
+      })
+    }
+
+    req.current = database_response.Item
 
     next()
   }

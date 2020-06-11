@@ -12,43 +12,9 @@ import { currentUserAuth } from '../../../../../helpers/validators'
 import { compose } from 'compose-middleware'
 
 export const get = compose([
-  currentUserAuth.validate,
+  currentUserAuth.validateAndSet,
   async (req, res) => {
-    const current = req.session.user
-
-    const [database_error, database_response] = await to(
-      Account.getByID({ accountId: current.account, includePrivates: true })
-    )
-
-    if (database_error) {
-      logger.error(
-        {
-          request_id: req.request_id,
-          error: { code: '1000', class: 'dynamo' }
-        },
-        database_error
-      )
-
-      return internalError({
-        res,
-        req,
-        code: '1000'
-      })
-    } else if (!database_response.Item) {
-      logger.error({
-        request_id: req.request_id,
-        error: { code: '1100', class: 'dynamo' },
-        query: { type: 'Account.getByID', id: current.account }
-      })
-
-      return internalError({
-        res,
-        req,
-        code: '1100'
-      })
-    }
-
-    const { Item: account } = database_response
+    const account = req.current
 
     const [braintree_error, braintree_responses] = await to(
       Promise.all([
