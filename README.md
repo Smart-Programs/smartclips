@@ -39,6 +39,9 @@ These environment variables should go in a `.env` file.
 - MIXER_SCOPE (Use "chat:connect chat:chat chat:bypass_links chat:bypass_slowchat chat:whisper user:details:self channel:details:self channel:update:self")
 - MIXER_REDIRECT (Use "http://localhost:3000/auth/callback/mixer")
 
+- WEBSITE_URL (Use "http://localhost:3000" for development)
+- API_URL (Use "http://localhost:3000/api" for development)
+
 - SESSIONS_SECRET (use anything)
 - SESSIONS_COOKIE (use anything)
 
