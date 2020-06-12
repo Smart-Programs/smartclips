@@ -14,7 +14,7 @@
   $: shortName =
     username.length > 20 ? `${username.substring(0, 17)}...` : username;
 
-  let imageLocation = `process.env.S3_FILES_URL/${id}.jpg`;
+  let imageLocation = `${process.env.S3_FILES_URL}/${id}.jpg`;
 
   let elem;
 

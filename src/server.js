@@ -6,6 +6,8 @@ import compression from 'compression'
 import bodyParser from 'body-parser'
 import session from 'cookie-session'
 
+import config from './config'
+
 import { ulid } from 'ulid'
 import { logger } from './helpers'
 
@@ -28,7 +30,7 @@ const app = polka()
       saveUninitialized: false,
       unset: 'destroy',
       cookie: cookie,
-      name: process.env.SESSIONS_COOKIE
+      name: config.SESSIONS_COOKIE
     }),
     (req, res, next) => {
       req.request_id = ulid()

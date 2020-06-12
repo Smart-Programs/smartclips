@@ -20,7 +20,7 @@
     content="The best clipping service to easily make clips on Mixer. Fully
     designed for streamers, focused on speed, user experience, and reliability." />
 
-  <meta property="og:url" content="https://smartclips.app" />
+  <meta property="og:url" content={process.env.BASE_URL} />
   <meta property="og:type" content="website" />
 </svelte:head>
 

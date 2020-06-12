@@ -1,6 +1,6 @@
 <script>
   let document = `%bPrivacy Policy
-Our Privacy Policy was posted on 7 December 2019 and last updated on 25 January 2020. It governs the privacy terms of our website, located at SmartClips.app, and the tools we provide you (the "Website" or the "Service"). Any capitalized terms not defined in our Privacy Policy, have the meaning as specified in our Terms of Use accessible at https://smartclips.app/legal/terms
+Our Privacy Policy was posted on 7 December 2019 and last updated on 25 January 2020. It governs the privacy terms of our website, located at ${process.env.BASE_URL}, and the tools we provide you (the "Website" or the "Service"). Any capitalized terms not defined in our Privacy Policy, have the meaning as specified in our Terms of Use accessible at ${process.env.BASE_URL}/legal/terms
 
 %bYour Privacy
 Our Website follows all legal requirements to protect your privacy. Our Privacy Policy is a legal statement that explains how we may collect information from you, how we may share your information, and how you can limit our sharing of your information. You will see terms in our Privacy Policy that are capitalized. These terms have meanings as described in the Definitions section below.
@@ -32,7 +32,7 @@ Cookies are files with small amount of data which may include an anonymous uniqu
 You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service.
 
 Third Party Cookies
-We use third party advertisements on smartclips.app to support our site. Some of these advertisers may use technology such as cookies and web beacons when they advertise on our site. This will also send these advertisers information including your IP address, your ISP, the browser you used to visit our site, and in some cases, whether you have Flash installed. This is generally used for geotargeting purposes or showing certain ads based on sites you visit.
+We use third party advertisements on ${process.env.BASE_URL} to support our site. Some of these advertisers may use technology such as cookies and web beacons when they advertise on our site. This will also send these advertisers information including your IP address, your ISP, the browser you used to visit our site, and in some cases, whether you have Flash installed. This is generally used for geotargeting purposes or showing certain ads based on sites you visit.
 
 DoubleClick Cookie
 Google uses the DoubleClick cookie, this allows Google, and their partners to serve ads.

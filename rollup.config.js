@@ -7,6 +7,8 @@ import { terser } from 'rollup-plugin-terser'
 import config from 'sapper/config/rollup.js'
 import pkg from './package.json'
 
+import envConfig from './src/config'
+
 const mode = process.env.NODE_ENV
 const dev = mode === 'development'
 const legacy = !!process.env.SAPPER_LEGACY_BUILD
@@ -16,6 +18,12 @@ const onwarn = (warning, onwarn) =>
     /[/\\]@sapper[/\\]/.test(warning.message)) ||
   onwarn(warning)
 
+const variables = {
+  'process.env.NODE_ENV': JSON.stringify(mode),
+  'process.env.S3_FILES_URL': JSON.stringify(envConfig.S3_FILES_URL),
+  'process.env.BASE_URL': JSON.stringify(envConfig.BASE_URL)
+}
+
 export default {
   client: {
     input: config.client.input(),
@@ -23,8 +31,7 @@ export default {
     plugins: [
       replace({
         'process.browser': true,
-        'process.env.NODE_ENV': JSON.stringify(mode),
-        'process.env.S3_FILES_URL': process.env.S3_FILES_URL
+        ...variables
       }),
       svelte({
         dev,
@@ -75,8 +82,7 @@ export default {
     plugins: [
       replace({
         'process.browser': false,
-        'process.env.NODE_ENV': JSON.stringify(mode),
-        'process.env.S3_FILES_URL': process.env.S3_FILES_URL
+        ...variables
       }),
       svelte({
         generate: 'ssr',
@@ -102,7 +108,7 @@ export default {
       resolve(),
       replace({
         'process.browser': true,
-        'process.env.NODE_ENV': JSON.stringify(mode)
+        ...variables
       }),
       commonjs(),
       !dev && terser()

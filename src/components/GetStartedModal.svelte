@@ -69,7 +69,7 @@
               </a>
               or by joining our discord at
               <a class="text-blue-500" href="discord" target="_blank">
-                https://smartclips.app/discord
+                {process.env.BASE_URL}/discord
               </a>
               We are here to help you!
             </p>

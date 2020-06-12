@@ -1,5 +1,7 @@
 import DocumentClient from './DocumentClient'
 
+import config from '../config'
+
 import Account from './account'
 
 import { ulid as generateId, decodeTime as getCreated } from 'ulid'
@@ -147,7 +149,7 @@ export default class Clip {
 
   static getClipByID ({ accountId, clipId }) {
     return DocumentClient.get({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       Key: {
         PK: `ACCOUNT#${accountId}`,
         SK: `#CLIP#${clipId}`
@@ -162,7 +164,7 @@ export default class Clip {
 
   static queryUserClips ({ accountId, next, previous, Limit = 30 }) {
     return DocumentClient.query({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       KeyConditionExpression: `PK = :account and SK ${
         next ? '<' : previous ? '>' : '<='
       } :range`,
@@ -204,7 +206,7 @@ export default class Clip {
 
       const [database_error, database_response] = await to(
         DocumentClient.query({
-          TableName: process.env.DYNAMO_TABLE_NAME,
+          TableName: config.DYNAMO_TABLE_NAME,
           IndexName: 'GSI2PK-GSI2SK-index',
           KeyConditionExpression: `GSI2PK = :recent${
             next

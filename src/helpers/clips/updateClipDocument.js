@@ -1,11 +1,13 @@
 import DocumentClient from '../../data/DocumentClient'
 
+import config from '../../config'
+
 export default function updateClipDocument ({ clip, status }) {
   const PK = `ACCOUNT#${clip.account}`
   const SK = `#CLIP#${clip.id}`
 
   return DocumentClient.update({
-    TableName: process.env.DYNAMO_TABLE_NAME,
+    TableName: config.DYNAMO_TABLE_NAME,
     Key: {
       PK,
       SK

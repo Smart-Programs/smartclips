@@ -1,10 +1,12 @@
 import { DynamoDB } from 'aws-sdk'
 
+import config from '../config'
+
 const DocumentClient = new DynamoDB.DocumentClient({
   accessKeyId: process.env.DYNAMO_ACCESS_KEY,
   secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION,
+  endpoint: config.DYNAMO_ENDPOINT,
+  region: config.DYNAMO_REGION,
   httpOptions: {
     timeout: 5000
   },

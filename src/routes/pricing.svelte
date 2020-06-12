@@ -52,7 +52,7 @@
     content="Plans designed with you and your stream in mind. Pick the perfect
     plan that suites your needs." />
 
-  <meta property="og:url" content="https://smartclips.app/pricing" />
+  <meta property="og:url" content={`${process.env.BASE_URL}/pricing`} />
   <meta property="og:type" content="website" />
 </svelte:head>
 

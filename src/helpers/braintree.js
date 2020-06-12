@@ -1,7 +1,9 @@
 import { BraintreeGateway, Environment } from 'braintree'
 
+import config from '../config'
+
 const gateway = new BraintreeGateway({
-  environment: Environment[process.env.BRAINTREE_ENV],
+  environment: Environment[config.BRAINTREE_ENV],
   merchantId: process.env.BRAINTREE_MERCHANT,
   privateKey: process.env.BRAINTREE_PRIVATE,
   publicKey: process.env.BRAINTREE_PUBLIC

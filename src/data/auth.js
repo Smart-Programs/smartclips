@@ -1,5 +1,7 @@
 import DocumentClient from './DocumentClient'
 
+import config from '../config'
+
 export default class Auth {
   constructor ({
     id,
@@ -70,7 +72,7 @@ export default class Auth {
 
   static getAuthProviderByID ({ provider, id }) {
     return DocumentClient.get({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       Key: {
         PK: `AUTH#${provider}#${id}`,
         SK: `AUTH#${provider}#${id}`
@@ -99,7 +101,7 @@ export default class Auth {
     const Limit = provider ? 1 : 10
 
     return DocumentClient.query({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       IndexName: 'GSI1PK-GSI1SK-index',
       KeyConditionExpression,
       ExpressionAttributeValues,

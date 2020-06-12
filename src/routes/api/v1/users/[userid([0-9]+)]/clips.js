@@ -1,6 +1,7 @@
+import DocumentClient from '../../../../../data/DocumentClient'
 import axios from 'axios'
-import { Auth, Clip } from '../../../../../data'
 
+import { Auth, Clip } from '../../../../../data'
 import { decodeTime } from 'ulid'
 import {
   isULID,
@@ -12,14 +13,6 @@ import {
 } from '../../../../../helpers'
 import { compose } from 'compose-middleware'
 import { getUserClips } from '../../../../../helpers/validators'
-import { DynamoDB } from 'aws-sdk'
-
-const DocumentClient = new DynamoDB.DocumentClient({
-  accessKeyId: process.env.DYNAMO_ACCESS_KEY,
-  secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-  endpoint: process.env.DYNAMO_ENDPOINT,
-  region: process.env.DYNAMO_REGION
-})
 
 export const get = compose([
   getUserClips.checks,

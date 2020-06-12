@@ -1,10 +1,10 @@
 <script>
   let document = `%bTerms of Use
-This web page represents our Terms of Use and Sale ("Agreement") regarding our website, located at smartclips.app, and the tools we provide you (the "Website" or the "Service"). It was last posted on 7 December 2019. The terms, "we" and "our" as used in this Agreement refer to SmartClips and SMARTPROGRAMS LLC.
+This web page represents our Terms of Use and Sale ("Agreement") regarding our website, located at ${process.env.BASE_URL}, and the tools we provide you (the "Website" or the "Service"). It was last posted on 7 December 2019. The terms, "we" and "our" as used in this Agreement refer to SmartClips and SMARTPROGRAMS LLC.
 
 We may amend this Agreement at any time by posting the amended terms on our Website. We may or may not post notices on the homepage of our Website when such changes occur.
 
-We refer to this Agreement, our Privacy Policy accessible at https://smartclips.app/legal/privacy, and any other terms, rules, or guidelines on our Website collectively as our "Legal Terms." You explicitly and implicitly agree to be bound by our Legal Terms each time you access our Website. If you do not wish to be so bound, please do not use or access our Website.
+We refer to this Agreement, our Privacy Policy accessible at ${process.env.BASE_URL}/legal/privacy, and any other terms, rules, or guidelines on our Website collectively as our "Legal Terms." You explicitly and implicitly agree to be bound by our Legal Terms each time you access our Website. If you do not wish to be so bound, please do not use or access our Website.
 
 %bLimited License
 SmartClips grants you a non-exclusive, non-transferable, revocable license to access and use our Website in order for you to gain access to viewing, creating clips, and related services through our Website, strictly in accordance with our Legal Terms.

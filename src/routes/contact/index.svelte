@@ -12,6 +12,6 @@
   <input
     type="hidden"
     name="redirectTo"
-    value="https://smartclips.app/contact/success" />
+    value={`${process.env.BASE_URL}/contact/success`} />
   <input type="submit" value="Submit" />
 </form>

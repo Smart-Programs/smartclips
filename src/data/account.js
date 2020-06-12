@@ -1,5 +1,7 @@
 import DocumentClient from './DocumentClient'
 
+import config from '../config'
+
 import { customAlphabet, nanoid } from 'nanoid'
 
 const NUMBERS = '0123456789'
@@ -172,7 +174,7 @@ export default class Account {
       throw new Error('Invalid accountId at getByID')
 
     return DocumentClient.get({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       Key: {
         PK: `ACCOUNT#${accountId}`,
         SK: `ACCOUNT#${accountId}`
@@ -186,14 +188,14 @@ export default class Account {
   static getAllByID ({ accountIds }) {
     return DocumentClient.batchGet({
       RequestItems: {
-        [process.env.DYNAMO_TABLE_NAME]: {
+        [config.DYNAMO_TABLE_NAME]: {
           Keys: accountIds
         }
       }
     })
       .promise()
       .then(({ Responses }) => ({
-        Items: Responses[process.env.DYNAMO_TABLE_NAME].map(Item =>
+        Items: Responses[config.DYNAMO_TABLE_NAME].map(Item =>
           this.toObject(Item)
         )
       }))
@@ -205,7 +207,7 @@ export default class Account {
       throw new Error('Invalid apiKey at getByAPIKey')
 
     return DocumentClient.query({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       IndexName: 'GSI2PK-GSI2SK-index',
       KeyConditionExpression: 'GSI2PK = :key and GSI2SK = :key',
       ExpressionAttributeValues: {
@@ -230,7 +232,7 @@ export default class Account {
     else if (isNaN(Number(hash))) throw new Error('Invalid hash at getByID')
 
     return DocumentClient.query({
-      TableName: process.env.DYNAMO_TABLE_NAME,
+      TableName: config.DYNAMO_TABLE_NAME,
       IndexName: 'GSI1PK-GSI1SK-index',
       KeyConditionExpression:
         'GSI1PK = :username and begins_with(GSI1SK, :usernameWithHash)',

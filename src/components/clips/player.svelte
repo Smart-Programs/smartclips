@@ -12,7 +12,7 @@
   $: shortName =
     username.length > 20 ? `${username.substring(0, 17)}...` : username;
 
-  let videoLocation = `process.env.S3_FILES_URL/${videoid}.mp4`;
+  let videoLocation = `${process.env.S3_FILES_URL}/${videoid}.mp4`;
 </script>
 
 <div
@@ -35,7 +35,7 @@
       class="float-right"
       target="popup"
       rel="noreferrer noopener"
-      href={encodeURI(`https://twitter.com/intent/tweet?text=Check out this clip by ${username}.\n"${title}" - https://smartclips.app/clips/${username}/${clipid}`)}
+      href={encodeURI(`https://twitter.com/intent/tweet?text=Check out this clip by ${username}.\n"${title}" - ${process.env.BASE_URL}/clips/${username}/${clipid}`)}
       aria-label="share clip">
       <span>Share</span>
       <svg width="24" height="24" class="inline">

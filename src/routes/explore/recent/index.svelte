@@ -102,7 +102,7 @@
     property="og:description"
     content="Keep up to date with what is happening recently on Mixer." />
 
-  <meta property="og:url" content="https://smartclips.app/explore/recent" />
+  <meta property="og:url" content={`${process.env.BASE_URL}/explore/recent`} />
   <meta property="og:type" content="website" />
 </svelte:head>
 

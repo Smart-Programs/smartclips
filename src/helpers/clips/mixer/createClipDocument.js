@@ -1,6 +1,8 @@
 import DocumentClient from '../../../data/DocumentClient'
 import axios from 'axios'
 
+import config from '../../../config'
+
 import { Clip } from '../../../data'
 
 const dateIsToday = (date, now = new Date()) =>
@@ -55,14 +57,14 @@ export default function createClipDocument ({
         TransactItems: [
           {
             Put: {
-              TableName: process.env.DYNAMO_TABLE_NAME,
+              TableName: config.DYNAMO_TABLE_NAME,
               Item: clip.toItem(),
               ConditionExpression: 'attribute_not_exists(PK)'
             }
           },
           {
             Update: {
-              TableName: process.env.DYNAMO_TABLE_NAME,
+              TableName: config.DYNAMO_TABLE_NAME,
               Key: {
                 PK: `ACCOUNT#${account.id}`,
                 SK: `ACCOUNT#${account.id}`

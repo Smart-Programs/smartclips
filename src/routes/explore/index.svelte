@@ -104,7 +104,7 @@
     content="Keep up to date with what is happening in your favorite games, or
     from your favorite creators." />
 
-  <meta property="og:url" content="https://smartclips.app/explore" />
+  <meta property="og:url" content={`${process.env.BASE_URL}/explore`} />
   <meta property="og:type" content="website" />
 </svelte:head>
 

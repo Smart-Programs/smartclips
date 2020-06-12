@@ -63,7 +63,7 @@
 
   <meta
     property="og:url"
-    content={`https://smartclips.app/users/${username}`} />
+    content={`${process.env.BASE_URL}/users/${username}`} />
   <meta property="og:type" content="website" />
 
   <meta
@@ -73,7 +73,7 @@
 
 <div class="pt-20 flex">
   <a
-    href={encodeURI(`https://twitter.com/intent/tweet?text=You should check out ${username}'s profile on SmartClips. https://smartclips.app/users/${username}`)}
+    href={encodeURI(`https://twitter.com/intent/tweet?text=You should check out ${username}'s profile on SmartClips. ${process.env.BASE_URL}/users/${username}`)}
     target="popup"
     rel="noreferrer noopener"
     class="flex-shrink-0 group block mx-auto focus:outline-none">

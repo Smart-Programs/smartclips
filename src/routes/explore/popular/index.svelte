@@ -34,7 +34,7 @@
     content="SmartClips | Explore what is popular on Mixer" />
   <meta property="og:description" content="See what's popular on Mixer" />
 
-  <meta property="og:url" content="https://smartclips.app/explore/recent" />
+  <meta property="og:url" content={`${process.env.BASE_URL}/explore/recent`} />
   <meta property="og:type" content="website" />
 </svelte:head>
 

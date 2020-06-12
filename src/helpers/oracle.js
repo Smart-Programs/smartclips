@@ -1,11 +1,16 @@
-const fs = require('fs')
-const https = require('https')
-const os = require('os')
-const httpSignature = require('http-signature')
-const jsSHA = require('jssha')
+import fs from 'fs'
+import https from 'https'
+import httpSignature from 'http-signature'
+import jsSHA from 'jssha'
+
+import config from '../config'
 
 const privateKey = process.env.ORACLE_PRIVATE_KEY.split(':::').join('\n')
-const apiKeyId = `${process.env.ORACLE_TENANCY_ID}/${process.env.ORACLE_USER_ID}/${process.env.ORACLE_KEY_FINGERPRINT}`
+const apiKeyId = config.ORACLE_API_KEY({
+  tenancy: process.env.ORACLE_TENANCY_ID,
+  user: process.env.ORACLE_USER_ID,
+  fingerprint: process.env.ORACLE_KEY_FINGERPRINT
+})
 
 function sign (request, body = '') {
   let headersToSign = ['host', 'date', '(request-target)']
@@ -58,12 +63,11 @@ export function invokeFunction (body = {}) {
 
     const request = https.request(
       {
-        host: process.env.ORACLE_FUNCTIONS_HOST,
-        path: process.env.ORACLE_FUNCTIONS_PATH,
+        ...config.ORACLE_FUNCTIONS_API,
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          'fn-invoke-type': process.env.ORACLE_FUNCTIONS_INVOKE
+          'fn-invoke-type': config.ORACLE_FUNCTIONS_INVOKE
         }
       },
       handleRequest(resolve)

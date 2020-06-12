@@ -3,6 +3,8 @@ import axios from 'axios'
 
 import { Account, Auth } from '../../data'
 
+import config from '../../config'
+
 const respond = (res, { body = {}, status = 200 }) => {
   res.setHeader('Content-Type', 'application/json')
   res.statusCode = status
@@ -45,9 +47,9 @@ export async function post (req, res) {
   }
 
   const [code_error, authorization] = await to(
-    axios.post('https://mixer.com/api/v1/oauth/token', {
+    axios.post(`${config.MIXER_BASE_API()}/oauth/token`, {
       grant_type: 'authorization_code',
-      client_id: process.env.MIXER_CLIENT,
+      client_id: config.MIXER_CLIENT,
       client_secret: process.env.MIXER_SECRET,
       redirect_uri: params.redirect_uri,
       code: code
@@ -78,7 +80,7 @@ export async function post (req, res) {
 
   const [user_error, data] = await to(
     Promise.all([
-      axios.get('https://mixer.com/api/v1/users/current', {
+      axios.get(`${config.MIXER_BASE_API()}/users/current`, {
         headers: {
           Authorization:
             authorization.data.token_type +
@@ -86,7 +88,7 @@ export async function post (req, res) {
             authorization.data.access_token
         }
       }),
-      axios.post('https://mixer.com/api/v1/oauth/token/introspect', {
+      axios.post(`${config.MIXER_BASE_API()}/oauth/token/introspect`, {
         token: authorization.data.access_token
       })
     ])
@@ -226,14 +228,14 @@ export async function post (req, res) {
         TransactItems: [
           {
             Put: {
-              TableName: process.env.DYNAMO_TABLE_NAME,
+              TableName: config.DYNAMO_TABLE_NAME,
               Item: auth.toItem(),
               ConditionExpression: 'attribute_not_exists(PK)'
             }
           },
           {
             Put: {
-              TableName: process.env.DYNAMO_TABLE_NAME,
+              TableName: config.DYNAMO_TABLE_NAME,
               Item: account.toItem(),
               ConditionExpression: 'attribute_not_exists(PK)'
             }
@@ -274,7 +276,7 @@ export async function post (req, res) {
     const [promise_error, promise_results] = await to(
       Promise.all([
         DocumentClient.update({
-          TableName: process.env.DYNAMO_TABLE_NAME,
+          TableName: config.DYNAMO_TABLE_NAME,
           Key: auth.key(),
           UpdateExpression: 'set #data.#tokens = :tokens',
           ExpressionAttributeNames: {
@@ -286,7 +288,7 @@ export async function post (req, res) {
           }
         }).promise(),
         DocumentClient.get({
-          TableName: process.env.DYNAMO_TABLE_NAME,
+          TableName: config.DYNAMO_TABLE_NAME,
           Key: account.key()
         }).promise()
       ])
@@ -320,7 +322,7 @@ export async function post (req, res) {
   }
 
   req.session.user = {
-    avatar: `https://mixer.com/api/v1/users/${user.data.id}/avatar`,
+    avatar: `${config.MIXER_BASE_API()}/users/${user.data.id}/avatar`,
     username: accountData.data.name,
     hash: accountData.data.hash,
     email: accountData.data.email,
@@ -339,9 +341,9 @@ export async function post (req, res) {
 }
 
 const params = {
-  client_id: process.env.MIXER_CLIENT,
-  redirect_uri: process.env.MIXER_REDIRECT,
-  scope: process.env.MIXER_SCOPE,
+  client_id: config.MIXER_CLIENT,
+  redirect_uri: `${config.BASE_URL}${config.OAUTH_CALLBACK('mixer')}`,
+  scope: config.MIXER_SCOPE,
   response_type: 'code'
 }
 
@@ -358,11 +360,7 @@ export async function get (req, res) {
   if (!includeApiKey || includeApiKey !== 'true') includeApiKey = false
   else includeApiKey = true
 
-  const allowedDomains = [
-    'https://smartclips.app',
-    'https://beep.nyda.pro',
-    'http://localhost'
-  ]
+  const allowedDomains = ['https://beep.nyda.pro']
 
   if (returnTo && returnTo.match(/http(s?):\/\/.*/)) {
     let good = false

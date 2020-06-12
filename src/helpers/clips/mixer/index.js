@@ -7,6 +7,8 @@ import { logger, to } from '../../index'
 import { ulid as generateId } from 'ulid'
 import { invokeFunction } from '../../oracle'
 
+import config from '../../../config'
+
 const STATUSES = {
   WORKING: 0,
   SUCCESS: 1,
@@ -129,14 +131,14 @@ export default async function createClipMixer ({
     S3_CONFIG: {
       accessKeyId: process.env.S3_ACCESS,
       secretAccessKey: process.env.S3_SECRET,
-      endpoint: process.env.S3_ENDPOINT
+      endpoint: config.S3_ENDPOINT
     },
-    S3_BUCKET: process.env.S3_BUCKET,
+    S3_BUCKET: config.S3_BUCKET,
     DYNAMO_CONFIG: {
       accessKeyId: process.env.DYNAMO_ACCESS_KEY,
       secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
-      endpoint: process.env.DYNAMO_ENDPOINT,
-      region: process.env.DYNAMO_REGION
+      endpoint: config.DYNAMO_ENDPOINT,
+      region: config.DYNAMO_REGION
     }
   }
 
@@ -171,6 +173,6 @@ export default async function createClipMixer ({
     created: true,
     clip: document.clip,
     message: 'The clip has been created successfully.',
-    url: `${process.env.WEBSITE_URL}/${document.clip.account}/${document.clip.id}`
+    url: `${config.BASE_URL}/clips/${document.clip.account}/${document.clip.id}`
   })
 }

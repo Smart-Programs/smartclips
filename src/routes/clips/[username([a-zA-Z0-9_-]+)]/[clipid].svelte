@@ -63,11 +63,11 @@
 
   <meta
     property="og:url"
-    content={`https://smartclips.app/clips/${username}/${clipid}`} />
+    content={`${process.env.BASE_URL}/clips/${username}/${clipid}`} />
   <meta property="og:type" content="video.other" />
   <meta
     property="og:video"
-    content={`process.env.S3_FILES_URL/${userid}/${clipid}.mp4`} />
+    content={`${process.env.S3_FILES_URL}/${userid}/${clipid}.mp4`} />
   <meta property="og:video:type" content="video/mp4" />
 </svelte:head>
 

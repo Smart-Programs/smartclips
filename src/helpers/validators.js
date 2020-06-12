@@ -1,5 +1,5 @@
 import { query, param, oneOf, validationResult } from 'express-validator'
-import { isULID, ulidValidation, internalError, respond, to } from './'
+import { isULID, ulidValidation, internalError, respond, logger, to } from './'
 import { Account } from '../data'
 
 const validate = (req, res, next) => {
