@@ -66,7 +66,7 @@ export default {
 
   OAUTH_CALLBACK: platform => `/auth/callback/${platform}`,
 
-  ORACLE_FUNCTIONS_INVOKE: 'detached',
+  ORACLE_FUNCTIONS_INVOKE: 'sync',
   ORACLE_FUNCTIONS_API: ({
     host = 'my_oracle_host_id',
     id = 'my_oracle_function_id'
