@@ -122,7 +122,7 @@ export default async function createClipMixer ({
 
   const invoke = {
     files,
-    key,
+    base: `https://videocdn.mixer.com/hls/${key}_source`,
     length,
     accountId: account.id,
     clipId: document.clip.id,
