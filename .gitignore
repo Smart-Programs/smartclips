@@ -7,3 +7,5 @@ yarn-error.log
 
 .now
 .env
+
+/src/config.development.js
