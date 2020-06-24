@@ -5,13 +5,6 @@ import jsSHA from 'jssha'
 
 import config from '../config'
 
-const privateKey = process.env.ORACLE_PRIVATE_KEY.split(':::').join('\n')
-const apiKeyId = config.ORACLE_API_KEY({
-  tenancy: process.env.ORACLE_TENANCY_ID,
-  user: process.env.ORACLE_USER_ID,
-  fingerprint: process.env.ORACLE_KEY_FINGERPRINT
-})
-
 function sign (request, body = '') {
   let headersToSign = ['host', 'date', '(request-target)']
 
@@ -34,8 +27,8 @@ function sign (request, body = '') {
   }
 
   httpSignature.sign(request, {
-    key: privateKey,
-    keyId: apiKeyId,
+    key: config.oracle.key,
+    keyId: config.oracle.keyId,
     headers: headersToSign
   })
 
@@ -63,11 +56,12 @@ export function invokeFunction (body = {}) {
 
     const request = https.request(
       {
-        ...config.ORACLE_FUNCTIONS_API,
+        host: config.oracle.host,
+        path: config.oracle.path,
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          'fn-invoke-type': config.ORACLE_FUNCTIONS_INVOKE
+          'fn-invoke-type': config.oracle.invoke
         }
       },
       handleRequest(resolve)
